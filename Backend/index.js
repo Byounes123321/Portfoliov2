@@ -8,7 +8,7 @@ app.use(express.json());
 app.use(bodyParser.json());
 const bcrypt = require("bcryptjs");
 
-// Login works! I need to add auth thought the front end
+// it looks like the hashes that i save from the frontend are different from the one saved in the backend (the one that i get from the database) maybe create a new user function so the hash is the same when decrypted
 // allow cors
 app.use(
   cors({
@@ -35,7 +35,10 @@ app.post("/api/auth", (req, res) => {
 
       if (result.length > 0) {
         const hashedPasswordFromDB = result[0].password;
-
+        console.log(hashedPasswordFromDB, hashedPasswordFromFrontend);
+        if (hashedPasswordFromDB === hashedPasswordFromFrontend) {
+          console.log("true");
+        }
         // Use bcrypt.compare to check if passwords match
         bcrypt.compare(
           hashedPasswordFromFrontend,
@@ -54,11 +57,13 @@ app.post("/api/auth", (req, res) => {
               res
                 .status(200)
                 .json({ success: true, message: "Authentication successful" });
+              console.log("Authentication successful");
             } else {
               // Passwords do not match
               res
                 .status(401)
                 .json({ success: false, message: "Authentication failed" });
+              console.log("Authentication failed");
             }
           }
         );

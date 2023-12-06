@@ -1,13 +1,19 @@
 import { Formik, Field, Form, FormikHelpers } from "formik";
 import styles from "./login-form.module.css";
 import bcrypt from "bcryptjs";
+import { useState } from "react";
+import { useAuth } from "./AuthContext";
+import { useRouter } from "next/router";
 
 interface Values {
   username: string;
   password: string;
 }
-
 export default function LoginForm() {
+  const { isLoggedIn, login, logout } = useAuth();
+
+  const router = useRouter();
+
   return (
     <div className={styles.login_box + " p-3"}>
       <h1 className="display-6 mb-3">Login</h1>
@@ -22,8 +28,9 @@ export default function LoginForm() {
         ) => {
           console.log("submitted");
           // Hash the password using bcryptjs
-          const hashedPassword = await bcrypt.hash(values.password, 10);
-          console.log(hashedPassword);
+          const hashedPassword = bcrypt.hashSync(values.password, 10);
+          console.log("hashed", hashedPassword);
+          console.log("password", values.password);
           // Send the hashed password to the backend
           fetch("http://localhost:8888/api/auth", {
             method: "POST",
@@ -37,10 +44,11 @@ export default function LoginForm() {
           })
             .then((data) => {
               console.log(data);
-              if (data) {
-                window.location.href = "/home";
+              if (data.ok) {
+                login();
+                router.push("/home");
               } else {
-                alert(data);
+                alert("Invalid username or password");
               }
             })
             .catch((error) => {
