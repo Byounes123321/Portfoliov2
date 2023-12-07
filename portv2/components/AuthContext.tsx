@@ -1,5 +1,12 @@
 // AuthContext.tsx
-import { createContext, useContext, useState, ReactNode } from "react";
+import { Router } from "next/router";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  ReactNode,
+} from "react";
 
 interface AuthContextProps {
   isLoggedIn: boolean;
@@ -16,8 +23,25 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isLoggedIn, setLoggedIn] = useState(false);
 
-  const login = () => setLoggedIn(true);
-  const logout = () => setLoggedIn(false);
+  useEffect(() => {
+    // Check session storage for the login status during initialization
+    const storedLoginStatus = sessionStorage.getItem("isLoggedIn");
+    if (storedLoginStatus) {
+      setLoggedIn(storedLoginStatus === "true");
+    }
+  }, []);
+
+  const login = () => {
+    setLoggedIn(true);
+    // Store the login status in session storage
+    sessionStorage.setItem("isLoggedIn", "true");
+  };
+
+  const logout = () => {
+    setLoggedIn(false);
+    // Remove the login status from session storage
+    sessionStorage.removeItem("isLoggedIn");
+  };
 
   return (
     <AuthContext.Provider value={{ isLoggedIn, login, logout }}>

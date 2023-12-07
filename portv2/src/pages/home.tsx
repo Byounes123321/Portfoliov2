@@ -1,32 +1,48 @@
 import { useEffect } from "react";
 import { useAuth } from "../../components/AuthContext";
 import { useRouter } from "next/router";
+import Header from "../../components/header";
 
 export default function Home() {
   const { isLoggedIn } = useAuth();
-  const { logout } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    // Check if we're on the client side before using router
-    if (typeof window !== "undefined") {
-      // If the user is not logged in, redirect them to the login page
-      if (!isLoggedIn) {
-        router.push("/"); // Update the path to your login page
-      }
+    // Check session storage for login status
+    const storedLoginStatus = sessionStorage.getItem("isLoggedIn");
+    if (typeof window !== "undefined" && storedLoginStatus !== "true") {
+      router.push("/");
     }
-  }, [isLoggedIn, router]);
-
-  // If the user is not logged in, prevent rendering content
-  if (!isLoggedIn) {
-    return null; // You can also render a loading spinner or message here
-  }
+  }, [router]);
 
   return (
-    <div>
-      <h1>Home</h1>
-      <p>Welcome, you are logged in!</p>
-      <button onClick={() => logout()}>Log out</button>
-    </div>
+    <>
+      <Header />
+      <div className="container mt-5">
+        <h1>Dashboard</h1>
+        <p>Welcome to Bassil&apos;s portfolio dashboard</p>
+
+        <h2 className="mt-4">Your Portfolio Summary</h2>
+
+        <table className="table table-bordered mt-3">
+          <thead>
+            <tr>
+              <th>
+                <a href="/projects">Projects</a>
+              </th>
+              <th>
+                <a href="/skills">Skills</a>
+              </th>
+              <th>
+                <a href="/education">Education</a>
+              </th>
+              <th>
+                <a href="/experience">Experience</a>
+              </th>
+            </tr>
+          </thead>
+        </table>
+      </div>
+    </>
   );
 }

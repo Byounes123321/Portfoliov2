@@ -1,7 +1,5 @@
 import { Formik, Field, Form, FormikHelpers } from "formik";
 import styles from "./login-form.module.css";
-import bcrypt from "bcryptjs";
-import { useState } from "react";
 import { useAuth } from "./AuthContext";
 import { useRouter } from "next/router";
 
@@ -9,9 +7,9 @@ interface Values {
   username: string;
   password: string;
 }
+
 export default function LoginForm() {
   const { isLoggedIn, login, logout } = useAuth();
-
   const router = useRouter();
 
   return (
@@ -26,12 +24,9 @@ export default function LoginForm() {
           values: Values,
           { setSubmitting }: FormikHelpers<Values>
         ) => {
-          console.log("submitted");
-          // Hash the password using bcryptjs
-          const hashedPassword = bcrypt.hashSync(values.password, 10);
-          console.log("hashed", hashedPassword);
-          console.log("password", values.password);
-          // Send the hashed password to the backend
+          //   console.log("submitted");
+
+          // Send the password to the backend
           fetch("http://localhost:8888/api/auth", {
             method: "POST",
             headers: {
@@ -39,12 +34,23 @@ export default function LoginForm() {
             },
             body: JSON.stringify({
               username: values.username,
-              password: hashedPassword,
+              password: values.password,
             }),
           })
             .then((data) => {
-              console.log(data);
-              if (data.ok) {
+              // Check if the response is JSON
+              if (
+                data.headers.get("content-type")?.includes("application/json")
+              ) {
+                return data.json();
+              } else {
+                // If not JSON, handle accordingly (you might need a different approach)
+                return { success: false, message: "Response is not JSON" };
+              }
+            })
+            .then((jsonData) => {
+              //   console.log(jsonData);
+              if (jsonData.success) {
                 login();
                 router.push("/home");
               } else {
