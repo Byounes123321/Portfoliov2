@@ -9,6 +9,7 @@ app.use(express.json());
 app.use(bodyParser.json());
 const bcrypt = require("bcryptjs");
 const formData = require("express-form-data");
+const multer = require("multer");
 
 /*
 AHHHH FUCKKK AHHHHHHHH i cant get the images to upload to the MOTHER FUCKING SERVER!!!!!
@@ -65,15 +66,29 @@ app.post("/api/auth", async (req, res) => {
   }
 });
 
-app.post("/api/newproject", (req, res) => {
-  const { image, title, url, content } = req.body;
-  console.log(req.body);
-  console.log(image);
+const storage = multer.memoryStorage(); // Store the file in memory
+const upload = multer({ storage: storage });
+
+app.post("/api/newproject", upload.single("image"), (req, res) => {
+  console.log("req.body: ", req.body);
+  const { title, url, content } = req.body;
+  const image = req.file; // Access the uploaded file here
 
   console.log("New project added");
+  //   console.log(req.body);
+  console.log(image);
+
+  // Check if the necessary fields are present
+  if (!title || !url || !content || !image) {
+    return res.status(400).json({ success: false, message: "Incomplete data" });
+  }
+
+  // Your logic to process and store the file
+  const imageData = image.buffer; // Access the image buffer
+
   connection.query(
-    `INSERT INTO projects (image, title, url, content) VALUES (?, ?, ?, ?)`,
-    [image, title, url, content],
+    "INSERT INTO projects (image, title, url, content) VALUES (?, ?, ?, ?)",
+    [imageData, title, url, content],
     (err, result) => {
       if (err) {
         console.log(err);

@@ -1,10 +1,15 @@
 import React, { FormEvent, useState } from "react";
 import Header from "../../../components/header";
 import { useRouter } from "next/router";
-
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+};
 export default function AddProject() {
   const router = useRouter();
   const [image, setImage] = useState<File | null>(null);
+
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -12,21 +17,28 @@ export default function AddProject() {
     if (file) {
       setImage(file);
     }
+    console.log(file);
   };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    const data = new FormData(e.currentTarget);
+    const data = new FormData();
 
     // Check if an image is selected
     if (image) {
-      data.append("image", image, image.name); // Append the image with its original name
+      // data.append("image", image); // Append the image with its original name
     }
-
-    const title = data.get("title") as string;
-    const url = data.get("url") as string;
-    const content = data.get("content") as string;
+    console.log(data.get("image"));
+    // Get the rest of the form data
+    const title = e.currentTarget.title.value;
+    const url = e.currentTarget.url.value;
+    const content = e.currentTarget.content.value;
+    // data.append("image", file);
+    data.append("title", title);
+    data.append("url", url);
+    data.append("content", content);
+    // ... other form fields ...
 
     // Convert skills to an array
     const skills = Array.from(data.getAll("skills"));
@@ -63,12 +75,7 @@ export default function AddProject() {
       <div>
         <h1>Add Project</h1>
       </div>
-      <form
-        action="/submit"
-        method="post"
-        onSubmit={handleSubmit}
-        encType="multipart/form-data"
-      >
+      <form method="post" onSubmit={handleSubmit} encType="multipart/form-data">
         <div>
           <label htmlFor="image">Image:</label>
           <input
